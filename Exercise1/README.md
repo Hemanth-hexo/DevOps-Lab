@@ -1,33 +1,34 @@
-
-# Kubernetes Exercise 1 
+# Exercise 1: Kubernetes Getting Started
 
 ## Objective
 
-The objective of this exercise is to deploy and access a containerized application using Kubernetes and Minikube.
+Deploy and access an Nginx application using Kubernetes and Minikube on macOS.
 
-In this exercise, an **Nginx container** is used to simulate a web application that needs to be deployed on Kubernetes.
+## Environment
 
----
+- Operating System: macOS
+- Architecture: Apple Silicon (arm64)
+- Shell: Terminal / zsh
+- Container Runtime: Docker
+- Kubernetes: Minikube
+- Kubernetes CLI: kubectl
 
-##  Prerequisites
+## Prerequisites
 
-* Windows
-* Docker Desktop
-* Minikube
-* kubectl
+The following tools are required:
 
-Minikube requires Docker or another supported VM driver.
+- Homebrew
+- Docker Desktop
+- Minikube
+- kubectl
 
----
+## 1. Install Minikube
 
-##  Steps Performed
-
-### 1. Start Minikube
-
-Started the local Kubernetes cluster using the Docker driver:
+Minikube was installed on macOS using Homebrew.
 
 ```bash
-minikube start 
+brew install minikube
+
 ```
 
 ### 2 Create the Kubernetes Pod
