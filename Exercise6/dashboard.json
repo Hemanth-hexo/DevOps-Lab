@@ -1,0 +1,14 @@
+{
+  "dashboard": {
+    "title": "Delivery Monitoring",
+    "refresh": "5s",
+    "time": {"from": "now-5m", "to": "now"},
+    "panels": [
+      {"id":1,"type":"timeseries","title":"Total Deliveries","gridPos":{"x":0,"y":0,"w":12,"h":8},"targets":[{"expr":"total_deliveries","refId":"A"}]},
+      {"id":2,"type":"timeseries","title":"Pending Deliveries","gridPos":{"x":12,"y":0,"w":12,"h":8},"targets":[{"expr":"pending_deliveries","refId":"A"}]},
+      {"id":3,"type":"timeseries","title":"On-the-Way Deliveries","gridPos":{"x":0,"y":8,"w":12,"h":8},"targets":[{"expr":"on_the_way_deliveries","refId":"A"}]},
+      {"id":4,"type":"timeseries","title":"Average Delivery Time (s)","gridPos":{"x":12,"y":8,"w":12,"h":8},"targets":[{"expr":"average_delivery_time_sum / average_delivery_time_count","refId":"A"}]}
+    ]
+  },
+  "overwrite": true
+}

@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+    environment {
+        // Source files mounted into the Jenkins container (see README)
+        LOCAL_SOURCE_PATH = '/src'
+        // Same directory as seen by the Docker host, used for bind mounts
+        HOST_SOURCE_PATH = '/tmp/delivery_monitoring'
+    }
+    stages {
+        stage('Pre-check Docker') {
+            steps {
+                script {
+                    try {
+                        // Check if Docker is installed
+                        def dockerVersion = sh(script: 'docker --version', returnStdout: true).trim()
+                        if (!dockerVersion) {
+                            error "Docker is not installed or not in the PATH. Please install Docker."
+                        }
+
+                        // Check if Docker daemon is running
+                        def dockerInfo = sh(script: 'docker info > /dev/null 2>&1', returnStatus: true)
+                        if (dockerInfo != 0) {
+                            error "Docker daemon is not running. Please start the Docker service."
+                        }
+
+                        echo "Docker is available and running: ${dockerVersion}"
+                    } catch (Exception e) {
+                        error "Pre-check failed: ${e.message}"
+                    }
+                }
+            }
+        }
+        stage('Setup Workspace') {
+            steps {
+                sh """
+                cp ${LOCAL_SOURCE_PATH}/delivery_metrics.py ${WORKSPACE}/
+                cp ${LOCAL_SOURCE_PATH}/prometheus.yml ${WORKSPACE}/
+                cp ${LOCAL_SOURCE_PATH}/alert_rules.yml ${WORKSPACE}/
+                cp ${LOCAL_SOURCE_PATH}/Dockerfile ${WORKSPACE}/
+                ls -l ${WORKSPACE}
+                """
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t delivery_metrics .'
+            }
+        }
+        stage('Run Application') {
+            steps {
+                sh '''
+                docker rm -f dm-delivery-metrics || true
+                docker run -d -p 8001:8000 --name dm-delivery-metrics delivery_metrics
+                '''
+            }
+        }
+        stage('Run Prometheus & Grafana') {
+            steps {
+                sh '''
+                docker rm -f dm-prometheus dm-grafana || true
+                docker run -d --name dm-prometheus -p 9090:9090 \
+                  --add-host=host.docker.internal:host-gateway \
+                  -v ${HOST_SOURCE_PATH}/prometheus.yml:/etc/prometheus/prometheus.yml \
+                  -v ${HOST_SOURCE_PATH}/alert_rules.yml:/etc/prometheus/alert_rules.yml \
+                  prom/prometheus
+                docker run -d --name dm-grafana -p 3000:3000 grafana/grafana
+                '''
+            }
+        }
+    }
+}
